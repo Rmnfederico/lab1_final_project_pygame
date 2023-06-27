@@ -46,6 +46,10 @@ class Enemy(pygame.sprite.Sprite):
         self.animation_count += 1
         self.update()
 
+    def get_hit(self):
+        self.hit = True
+        self.hit_count = 0
+    
     def loop(self):
         #Here handle:
         # - Attack
@@ -62,8 +66,8 @@ class Enemy(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(topleft=(self.rect.x, self.rect.y))
         self.mask = pygame.mask.from_surface(self.image)
 
-    def draw(self, win, offset_x):
-        win.blit(self.image, (self.rect.x - offset_x, self.rect.y))
+    def draw(self, win, offset_x, offset_y):
+        win.blit(self.image, (self.rect.x - offset_x, self.rect.y - offset_y))
 
 
 class Bunny(Enemy):
@@ -81,6 +85,12 @@ class Bunny(Enemy):
     
     def loop(self):
         self.patrol(True)
+        if self.hit:
+            self.hit_count += 1
+        if self.hit_count > FPS * 1.5:
+            self.hit = False
+            self.hit_count = 0
+
         super().loop()
 
     #def jump()
@@ -104,7 +114,7 @@ class Bunny(Enemy):
             self.ignore_default_sprite = True
         #5 Implementing hit animation (IMPORTANT TO PUT IT AT THE TOP)
         if self.hit:
-            sprite_sheet = "hit"
+            self.sprite_sheet = "hit"
         elif self.y_vel < 0:
             if self.jump_count == 1:
                 sprite_sheet = 'jump'
@@ -129,8 +139,8 @@ class Bullet(pygame.sprite.Sprite):
     def update(self):
         self.rect.x += self.speed
 
-    def draw(self, win):
-        win.blit(self.image, (self.rect.x, self.rect.y))
+    def draw(self, win, offset_x, offset_y):
+        win.blit(self.image, (self.rect.x - offset_x, self.rect.y - offset_y))
 
 class Plant(Enemy):
     left, right = "right", "left"
@@ -169,6 +179,6 @@ class Plant(Enemy):
         self.active_bullets.update()
         super().update()
         
-    def draw(self, win, offset_x):
-        self.active_bullets.draw(win)
-        super().draw(win, offset_x)
+    def draw(self, win, offset_x, offset_y):
+        #self.active_bullets.draw(win)
+        super().draw(win, offset_x, offset_y)

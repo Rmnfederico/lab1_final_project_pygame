@@ -13,3 +13,11 @@ class BaseLevel:
     def init_entities(self):
         pass
     
+    def control_traps(self):
+        pass
+
+    def trigger_traps(self):
+        pass
+    
+    def is_finished(self):
+        pass

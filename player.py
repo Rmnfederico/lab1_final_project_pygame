@@ -13,6 +13,10 @@ class Player(pygame.sprite.Sprite):
     def __init__(self, x, y ,width, height):
         super().__init__()
         self.rect = pygame.Rect(x, y, width, height)
+
+        self.x = x
+        self.y = y
+
         self.x_vel = 0
         self.y_vel = 0
         self.mask = None
@@ -81,6 +85,9 @@ class Player(pygame.sprite.Sprite):
         # Reset the player's velocity to the normal value
         self.x_vel = 0
         self.dashing = False
+    
+    def throw_projectile(self):
+        pass #IMPLEMENT
 
     def move(self, dx, dy):
         self.rect.x += dx
@@ -90,6 +97,15 @@ class Player(pygame.sprite.Sprite):
     def get_hit(self):
         self.hit = True
         self.hit_count = 0
+    
+    def check_fall(self):
+        if self.rect.bottom >= WIDTH*2:
+            self.rect.x = self.x
+            self.rect.y = self.y
+            self.hit= True
+            self.lose_life()
+            return True
+        else: return False
 
     def move_left(self, vel: int):
         self.x_vel = -vel
@@ -104,6 +120,9 @@ class Player(pygame.sprite.Sprite):
             self.animation_count = 0
 
     def loop(self, fps):
+
+        self.check_fall()
+
         self.y_vel += min(1, (self.fall_count / fps) * self.GRAVITY)
         self.move(self.x_vel, self.y_vel)
         self.fall_count +=1
@@ -126,8 +145,8 @@ class Player(pygame.sprite.Sprite):
         if self.dash_cooldown > 0:
             self.dash_cooldown -= 1
 
-
         self.update_sprite()
+
 
     def landed(self):
         self.fall_count = 0
@@ -167,5 +186,5 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.sprite.get_rect(topleft=(self.rect.x, self.rect.y))
         self.mask = pygame.mask.from_surface(self.sprite)
 
-    def draw(self, win, offset_x):
-        win.blit(self.sprite, (self.rect.x - offset_x, self.rect.y))
+    def draw(self, win, offset_x, offset_y):
+        win.blit(self.sprite, (self.rect.x - offset_x, self.rect.y - offset_y))

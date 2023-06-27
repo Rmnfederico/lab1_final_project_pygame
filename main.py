@@ -11,17 +11,24 @@ pygame.display.set_caption("Super Pixel boys")
 
 window = pygame.display.set_mode((WIDTH,HEIGHT))
 
-def draw(window, background, bg_image, player, objects, enemies, offset_x):
+def draw(window, background, bg_image, player, objects, enemies, offset_x, offset_y, scroll):
     for tile in background:
         window.blit(bg_image, tile)
 
     for obj in objects:
-        obj.draw(window, offset_x)
+        obj.draw(window, offset_x, offset_y)
+        #obj.draw(window, scroll)
 
     for enemy in enemies:
-        enemy.draw(window, offset_x)
+        enemy.draw(window, offset_x,offset_y)
+        #enemy.draw(window, scroll)
+        if enemy.name == "plant":
+            for bullet in enemy.active_bullets:
+                bullet.draw(window, offset_x,offset_y)
 
-    player.draw(window, offset_x)
+
+    player.draw(window, offset_x,offset_y)
+    #player.draw(window, scroll)
 
     pygame.display.update()
 
@@ -32,8 +39,6 @@ def handle_vertical_collision(player, objects, player_y_vel):
             if player_y_vel > 0:
                 player.rect.bottom = obj.rect.top
                 player.landed()
-                if isinstance(obj, Enemy):
-                    print("ON TOP OF ENEMY")
             elif player_y_vel < 0:
                 player.rect.top = obj.rect.bottom
                 player.hit_head()
@@ -74,8 +79,11 @@ def handle_move(player: Player, objects):
         if obj and obj.name == "fire" and obj.animation_name == "on":
             player.get_hit()
             player.lose_life()
-        #
-        if obj and obj.name == "bunny" and not player.hit:
+        
+        if obj and player.rect.bottom <= obj.rect.top and obj.name == "bunny":
+            obj.hit = True
+            print("HIT BUNNY ON TOP")
+        elif obj and obj.name == "bunny" and not player.hit:
             player.get_hit()
             player.lose_life()
 
@@ -87,6 +95,9 @@ def main(window): ######## MAIN LOOP ########
     clock = pygame.time.Clock()
     background, bg_image = get_background("Sky_wall.jpg")
     #window.blit(bg_image, bg_image_rect)
+
+    #True Scroll variable
+    true_scroll = [0,0]
 
     # Creating Groups for all the different sprites
     all_sprites = pygame.sprite.Group()
@@ -104,7 +115,7 @@ def main(window): ######## MAIN LOOP ########
     player = Player(100,100, 50, 50)
     player_group.add(player)
 
-    fire = Fire(150, HEIGHT - block_size - 64, 16, 32)
+    fire = Fire(250, HEIGHT - block_size - 64, 16, 32)
     #fire.on()
     floor = [Block(i* block_size, HEIGHT - block_size, block_size) for i in range(-WIDTH // block_size, WIDTH*2 // block_size)]
 
@@ -118,7 +129,16 @@ def main(window): ######## MAIN LOOP ########
                Block(block_size*3,HEIGHT-block_size*4, block_size), fire, *enemies,*air_platform]
 
     offset_x = 0
+    offset_y = 0
     scroll_area_width = 150
+
+    #Fluffly scrolling / Parallax
+    true_scroll[0] += (player.rect.x-true_scroll[0]-(WIDTH//2 + player.rect.width//2))/20
+    true_scroll[1] += (player.rect.y-true_scroll[1]-(HEIGHT//2+player.rect.height//2))/20
+    scroll = true_scroll.copy()
+    scroll[0] = int(scroll[0])
+    scroll[1] = int(scroll[1])
+    #############################
 
     running = True
     while running:
@@ -137,8 +157,11 @@ def main(window): ######## MAIN LOOP ########
         ### Updating and looping ALL ###
 
         player.loop(FPS)
+        if player.check_fall():
+            offset_x, offset_y = player.x, player.y
+
         fire.loop()
-        
+
         for enemy in enemies: 
             enemy.loop()
             if enemy.name == "plant":
@@ -148,11 +171,14 @@ def main(window): ######## MAIN LOOP ########
                         player.get_hit()
 
         handle_move(player, objects)
-        draw(window, background, bg_image, player, objects, enemies, offset_x)
+        draw(window, background, bg_image, player, objects, enemies, offset_x, offset_y, scroll)
 
         if ((player.rect.right - offset_x >= WIDTH - scroll_area_width) and player.x_vel > 0) or (
             (player.rect.left - offset_x <= scroll_area_width) and player.x_vel < 0):
             offset_x += player.x_vel
+        if ((player.rect.bottom - offset_y >= HEIGHT - scroll_area_width) and player.y_vel > 0) or (
+            (player.rect.top - offset_y <= scroll_area_width) and player.y_vel < 0):
+            offset_y += player.y_vel
 
     pygame.quit() #quitting pygame module
     quit() #quitting python program

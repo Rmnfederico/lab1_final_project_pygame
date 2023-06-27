@@ -31,6 +31,7 @@ class Enemy(pygame.sprite.Sprite):
         self.animation_count = 0
         self.hit = False
         self.hit_count = 0
+        self.lives = None
 
     def update_sprite(self):
         #######
@@ -49,6 +50,8 @@ class Enemy(pygame.sprite.Sprite):
     def get_hit(self):
         self.hit = True
         self.hit_count = 0
+        if self.lives:
+            self.lives -= 1
     
     def loop(self):
         #Here handle:
@@ -82,6 +85,7 @@ class Bunny(Enemy):
         self.image = self.SPRITES["idle_"+ self.direction][0]
         self.mask = pygame.mask.from_surface(self.image)
         self.default_sprite = "idle"
+        self.lives = 3
     
     def loop(self):
         self.patrol(True)
@@ -154,9 +158,15 @@ class Plant(Enemy):
         self.default_sprite = "attack"
         self.shot_timer = 0
         self.active_bullets = pygame.sprite.Group()
+        self.lives = 2
 
     def loop(self):
         #self.shoot()
+        if self.hit:
+            self.hit_count += 1
+        if self.hit_count > FPS * 1.5:
+            self.hit = False
+            self.hit_count = 0
         super().loop()
 
     def shoot(self, offset_x):
@@ -173,6 +183,9 @@ class Plant(Enemy):
         if not self.ignore_default_sprite:
             self.sprite_sheet = self.default_sprite
             self.ignore_default_sprite = True
+        
+        if self.hit:
+            self.sprite_sheet = "hit"
         super().update_sprite()
 
     def update(self):

@@ -28,6 +28,8 @@ def draw(window, background, bg_image, player, objects, enemies, offset_x, offse
 
 
     player.draw(window, offset_x,offset_y)
+    for projectile in player.projectiles:
+        projectile.draw(window, offset_x,offset_y)
     #player.draw(window, scroll)
 
     pygame.display.update()
@@ -80,7 +82,7 @@ def handle_move(player: Player, objects):
             player.get_hit()
             player.lose_life()
         
-        if obj and player.rect.bottom <= obj.rect.top and obj.name == "bunny":
+        if obj and player.rect.bottom <= obj.rect.top and obj.name == "bunny" and not player.hit:
             obj.hit = True
             print("HIT BUNNY ON TOP")
         elif obj and obj.name == "bunny" and not player.hit:
@@ -103,10 +105,11 @@ def main(window): ######## MAIN LOOP ########
     all_sprites = pygame.sprite.Group()
 
     player_group = pygame.sprite.GroupSingle()
-    player_bullets = pygame.sprite.Group()
     
     enemies_group = pygame.sprite.Group()
     enemy_bullets = pygame.sprite.Group()
+
+    objects_group = pygame.sprite.Group()
 
     #SEND TO CONSTANTS
     block_size = 96
@@ -121,12 +124,17 @@ def main(window): ######## MAIN LOOP ########
 
     air_platform = [Block(i* block_size, HEIGHT - block_size*4, block_size) for i in range((WIDTH - 300) // block_size, WIDTH // block_size)]
     
+    objects_group.add(fire, *floor, *air_platform)
+
     #NOTE: on_floor() helper func. to calc y coordinate for a sprite to be on top of main floor
     enemies = [Bunny(700, HEIGHT-block_size-BUNNY_HEIGHT,34,44),
                Plant(800,HEIGHT-block_size*4-84, 44, 42)]
 
+    enemies_group.add(*enemies)
+
     objects = [*floor, Block(0,HEIGHT - block_size*2, block_size),
                Block(block_size*3,HEIGHT-block_size*4, block_size), fire, *enemies,*air_platform]
+    objects_group.add(objects[31], objects[32]) #REFACTOR THIS CRAP 
 
     offset_x = 0
     offset_y = 0
@@ -153,15 +161,18 @@ def main(window): ######## MAIN LOOP ########
                     player.jump()
                 if event.key == pygame.K_LSHIFT and not player.dashing:
                     player.dash()
-        
-        ### Updating and looping ALL ###
+                if event.key == pygame.K_LCTRL:
+                    player.throw_projectile()
+                    print(len(player.projectiles)) #CLEAR PROJECTILES LIST
 
+        ### Updating and looping ALL ###
         player.loop(FPS)
         if player.check_fall():
             offset_x, offset_y = player.x, player.y
 
         fire.loop()
 
+        #TO LEVEL LOGIC
         for enemy in enemies: 
             enemy.loop()
             if enemy.name == "plant":
@@ -169,6 +180,19 @@ def main(window): ######## MAIN LOOP ########
                 if enemy.active_bullets:
                     if pygame.sprite.spritecollide(player, enemy.active_bullets, True):
                         player.get_hit()
+
+        #TO BULLET LOGIC (OR PLAYER CLASS LOGIC MAYBE?)
+        for bomb in player.projectiles:
+            for obj in objects_group:
+                if pygame.sprite.collide_mask(bomb, obj):
+                    print(f'collided w/ {obj}')
+                    player.projectiles.remove(bomb)
+            for enemy in enemies_group:
+                if pygame.sprite.collide_mask(bomb, enemy):
+                    print(f'collided with {type(enemy)}')
+                    enemy.get_hit()
+                    player.projectiles.remove(bomb)
+                    print(enemy.lives)
 
         handle_move(player, objects)
         draw(window, background, bg_image, player, objects, enemies, offset_x, offset_y, scroll)

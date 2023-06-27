@@ -1,6 +1,7 @@
 import threading
 import pygame
 from config import *
+from enemy import Bullet
 
 class Player(pygame.sprite.Sprite):
     COLOR = (255, 0, 0)
@@ -32,6 +33,7 @@ class Player(pygame.sprite.Sprite):
         self.dashing_time = 0
         self.dash_cooldown = 0
         self.lives = 5
+        self.projectiles = pygame.sprite.Group()
 
     def lose_life(self):
         self.lives -= 1
@@ -87,7 +89,15 @@ class Player(pygame.sprite.Sprite):
         self.dashing = False
     
     def throw_projectile(self):
-        pass #IMPLEMENT
+        if self.direction == "left":
+            bomb = Bullet(self.rect.x, self.rect.y, "assets/Items/Throwables/bomb.jpg", -2)
+        else:
+            bomb = Bullet(self.rect.x, self.rect.y, "assets/Items/Throwables/bomb.jpg", 2)
+        bomb.image = pygame.transform.rotozoom(bomb.image, 0, 0.015)
+        bomb.image.set_colorkey((208,206,207))
+        bomb.image.set_colorkey((221,221,221))
+        bomb.image.set_colorkey((255,255,255))
+        self.projectiles.add(bomb)
 
     def move(self, dx, dy):
         self.rect.x += dx
@@ -185,6 +195,7 @@ class Player(pygame.sprite.Sprite):
     def update(self):
         self.rect = self.sprite.get_rect(topleft=(self.rect.x, self.rect.y))
         self.mask = pygame.mask.from_surface(self.sprite)
+        self.projectiles.update()
 
     def draw(self, win, offset_x, offset_y):
         win.blit(self.sprite, (self.rect.x - offset_x, self.rect.y - offset_y))

@@ -13,6 +13,10 @@ class Object(pygame.sprite.Sprite):
     def draw(self, win, offset_x, offset_y):
         win.blit(self.image, (self.rect.x - offset_x, self.rect.y - offset_y))
 
+    #MOST LIKELY NOT NECESSARY HERE; JUST IN ITEMS/TRAPS(NOT ALL OF THEM)
+    def update(self): 
+        pass
+
 class Block(Object):
     def __init__(self, x, y , size):
         super().__init__(x, y, size, size)

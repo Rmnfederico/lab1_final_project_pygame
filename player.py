@@ -90,18 +90,16 @@ class Player(pygame.sprite.Sprite):
     
     def throw_projectile(self):
         if self.direction == "left":
-            bomb = Bullet(self.rect.x, self.rect.y, "assets/Items/Throwables/bomb.jpg", -2)
+            bomb = Bullet(self.rect.x, self.rect.y, "assets/Items/Throwables/bomb.jpg", -2, True)
         else:
-            bomb = Bullet(self.rect.x, self.rect.y, "assets/Items/Throwables/bomb.jpg", 2)
+            bomb = Bullet(self.rect.x, self.rect.y, "assets/Items/Throwables/bomb.jpg", 2, True)
         bomb.image = pygame.transform.rotozoom(bomb.image, 0, 0.015)
-        bomb.image.set_colorkey((208,206,207))
-        bomb.image.set_colorkey((221,221,221))
         bomb.image.set_colorkey((255,255,255))
         self.projectiles.add(bomb)
 
-    def move(self, dx, dy):
-        self.rect.x += dx
-        self.rect.y += dy
+        #TODO:VOLLEY LOGIC
+        #TODO:SHOOT DOWN LOGIC (WHILE IN AIR & PRESSIND DOWN KEY 's')
+
 
     #3 Method to control hit state
     def get_hit(self):
@@ -116,6 +114,10 @@ class Player(pygame.sprite.Sprite):
             self.lose_life()
             return True
         else: return False
+
+    def move(self, dx, dy):
+        self.rect.x += dx
+        self.rect.y += dy
 
     def move_left(self, vel: int):
         self.x_vel = -vel
@@ -155,6 +157,7 @@ class Player(pygame.sprite.Sprite):
         if self.dash_cooldown > 0:
             self.dash_cooldown -= 1
 
+        self.projectiles.update()
         self.update_sprite()
 
 

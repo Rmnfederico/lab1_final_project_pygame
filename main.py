@@ -10,6 +10,7 @@ pygame.init()
 pygame.display.set_caption("Super Pixel boys")
 
 window = pygame.display.set_mode((WIDTH,HEIGHT))
+pygame.display.get_wm_info()
 
 def draw(window, background, bg_image, player, objects, enemies, offset_x, offset_y, scroll, groups):
     for tile in background:
@@ -104,7 +105,7 @@ def collide_group(player, objects_group, dx):
     return collided_objects
 ##################
 
-def handle_move(player: Player, objects):
+def handle_move(player: Player, objects, enemies_group):
     keys = pygame.key.get_pressed()
 
     player.x_vel = 0 #This way no flag is needed to know if player is moving
@@ -118,28 +119,44 @@ def handle_move(player: Player, objects):
         player.move_right(PLAYER_VEL)
 
     vertical_collide = handle_vertical_collision(player, objects, player.y_vel)
-    vertical_collide_2 = handle_vertical_collision_group(player, objects, player.y_vel)
 
     to_check = [collide_left, collide_right, *vertical_collide]
 
     for obj in to_check: #get_trap_names() List to replace "fire"
+        
+        if obj and isinstance(obj, Block):
+            player.attatch_to_wall(obj)
+            #print(f'attached?: {player.attached}')
+        
         if obj and obj.name == "fire" and obj.animation_name == "on" and not player.hit:
             player.get_hit()
-            player.lose_life()
+            print("COLLIDING WITH FIRE")
+            #player.lose_life()
 
         if obj and isinstance(obj, Enemy) and player.rect.bottom <= obj.rect.top:
-            obj.hit = True
+            obj.get_hit()
+            player.jump(player.JUMP_POWER/2)
             print("HIT ENEMY ON TOP")
+            print(f'lives:{obj.lives}')
+            if not obj.alive:
+                objects.remove(obj) #TODO:ANIMATE DEATH AS WELL!!!
+                obj.kill() #
+
+
+            break
 
         elif obj and isinstance(obj, Enemy) and not player.hit and not obj.hit:
             player.get_hit()
-            player.lose_life()
+
+            #player.lose_life()
 
 
 def main(window): ######## MAIN LOOP ########
     clock = pygame.time.Clock()
     background, bg_image = get_background("Sky_wall.jpg")
     #window.blit(bg_image, bg_image_rect)
+
+    rotate_counter = 0
 
     #True Scroll variable
     true_scroll = [0,0]
@@ -181,6 +198,9 @@ def main(window): ######## MAIN LOOP ########
                Block(block_size*3,HEIGHT-block_size*4, block_size), fire, *enemies,*air_platform]
 
     objects_group.add(objects[31], objects[32]) #REFACTOR THIS CRAP 
+    
+    all_sprites.add(player, fire, *floor, *air_platform, *enemies) #TODO:
+    
 
     offset_x = 0
     offset_y = 0
@@ -198,21 +218,38 @@ def main(window): ######## MAIN LOOP ########
     while running:
         clock.tick(FPS)
 
+        rotate_counter += 1
+        if rotate_counter > 360:
+            rotate_counter = 0
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
                 break
             if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    running = False
+                    pygame.quit()
+                    exit()
                 if event.key == pygame.K_SPACE and player.jump_count < 2:
-                    player.jump()
+                    if not player.attached:
+                        player.jump()
+                    else:
+                        if player.direction == "right":
+                            player.x_vel -= 10
+                        else:
+                            player.x_vel += 10
+                        player.jump()
+
                 if event.key == pygame.K_LSHIFT and not player.dashing:
                     player.dash()
                 if event.key == pygame.K_LCTRL:
-                    player.throw_projectile()
-                    print(len(player.projectiles)) #CLEAR PROJECTILES LIST
+                    player.throw_projectile(rotate_counter)
+                    #TODO: CLEAR PROJECTILES LIST
 
         ### Updating and looping ALL ###
         player.loop(FPS)
+
         if player.check_fall():
             offset_x, offset_y = player.x, player.y
 
@@ -221,7 +258,7 @@ def main(window): ######## MAIN LOOP ########
         #TO LEVEL LOGIC
         for enemy in enemies: 
             enemy.loop()
-            if enemy.name == "plant":
+            if enemy.name == "plant" and enemy.alive:
                 enemy.shoot(offset_x, player)
                 #TODO: FIX BULLETS OFFSET_X TO MATCH PLANT's X POS.
                 if enemy.active_bullets:
@@ -240,15 +277,21 @@ def main(window): ######## MAIN LOOP ########
             for enemy in enemies_group:
                 if pygame.sprite.collide_mask(bomb, enemy):
                     print(f'collided with {type(enemy)}')
-                    enemy.get_hit()
+                    
+                    #TODO:REFACTOR THIS LOGIC TO SOME FUNC/METHOD
+                    enemy.get_hit() 
                     player.projectiles.remove(bomb)
-                    enemies_group.remove(enemy)
+                    if not enemy.alive:
+                        enemies_group.remove(enemy)
+                        objects.remove(enemy) #TODO:ANIMATE DEATH AS WELL!!!
+                        enemy.kill() #
+
                     #enemies.remove(enemy) # 
                     # ADD ALL SPRITES TO A GROUP
                     # REFACTOR DRAW / DIRECTLY DRAW SPRITE GROUPS
                     # UPDATE ALL SPRITES GROUPS
 
-        handle_move(player, objects)
+        handle_move(player, objects, enemies_group)
         draw(window, background, bg_image, player, objects, enemies, offset_x, offset_y, scroll, [enemies_group])
 
         if ((player.rect.right - offset_x >= WIDTH - scroll_area_width) and player.x_vel > 0) or (

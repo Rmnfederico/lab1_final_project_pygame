@@ -9,6 +9,7 @@ class Object(pygame.sprite.Sprite):
         self.width = width
         self.height = height
         self.name = name
+        self.is_trap = False
 
     def draw(self, win, offset_x, offset_y):
         win.blit(self.image, (self.rect.x - offset_x, self.rect.y - offset_y))
@@ -51,3 +52,24 @@ class Fire(Object):
         self.mask = pygame.mask.from_surface(self.image)
         if self.animation_count // self.ANIMATION_DELAY > len(sprites):
             self.animation_count = 0
+
+class Traps(Object):
+    pass
+
+class Platform(Object):
+    pass
+
+class Saw(Object):
+    pass
+
+class FallingPlatform(Object):
+    pass
+
+class MovingPlatform(Object):
+    pass
+
+class Coin(Object):
+    pass
+
+class Life(Object):
+    pass

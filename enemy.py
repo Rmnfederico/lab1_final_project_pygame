@@ -32,6 +32,7 @@ class Enemy(pygame.sprite.Sprite):
         self.hit = False
         self.hit_count = 0
         self.lives = None
+        self.alive = True
 
     def update_sprite(self):
         #######
@@ -47,11 +48,21 @@ class Enemy(pygame.sprite.Sprite):
         self.animation_count += 1
         self.update()
 
+    def animate_death(self):
+        if not self.alive:
+            pass #TODO: DEATH SMOKE CLOUD ANIMATION IN SELF.POS
+    
+    def check_alive(self):
+        if self.lives == 0:
+            self.alive = False
+            self.animate_death()
+    
     def get_hit(self):
         self.hit = True
         self.hit_count = 0
-        if self.lives:
+        if self.lives > 0:
             self.lives -= 1
+        self.check_alive()
     
     def loop(self):
         #Here handle:
@@ -147,6 +158,9 @@ class Bullet(pygame.sprite.Sprite):
 
     def to_pieces(self):
         self.image = pygame.transform.scale2x(pygame.image.load(r"assets\Enemies\Plant\Bullet Pieces.png").convert_alpha())
+
+    def rotate(self, angle):
+        return pygame.transform.rotozoom(self.image, angle, 1)
 
     def apply_volley(self, FPS):
         if not self.upwards:

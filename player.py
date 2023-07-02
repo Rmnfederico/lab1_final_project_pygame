@@ -32,6 +32,7 @@ class Player(pygame.sprite.Sprite):
         self.dashing = False
         self.dashing_time = 0
         self.dash_cooldown = 0
+        self.attached = False
         self.lives = 5
         self.projectiles = pygame.sprite.Group()
 
@@ -44,8 +45,11 @@ class Player(pygame.sprite.Sprite):
         else:
             return False
 
-    def jump(self):
-        self.y_vel = -self.GRAVITY * self.JUMP_POWER
+    def jump(self, jump_pwr= None):
+        if not jump_pwr:
+            self.y_vel = -self.GRAVITY * self.JUMP_POWER
+        else:
+            self.y_vel = -self.GRAVITY * jump_pwr
         self.animation_count = 0
         self.jump_count += 1
         if self.jump_count == 1:
@@ -88,16 +92,16 @@ class Player(pygame.sprite.Sprite):
         self.x_vel = 0
         self.dashing = False
     
-    def throw_projectile(self):
+    def throw_projectile(self, rotate_counter):
         if self.direction == "left":
             bomb = Bullet(self.rect.x, self.rect.y, "assets/Items/Throwables/bomb.jpg", -2, True)
         else:
             bomb = Bullet(self.rect.x, self.rect.y, "assets/Items/Throwables/bomb.jpg", 2, True)
         bomb.image = pygame.transform.rotozoom(bomb.image, 0, 0.015)
+        #bomb.image = bomb.rotate(rotate_counter)
         bomb.image.set_colorkey((255,255,255))
         self.projectiles.add(bomb)
 
-        #TODO:VOLLEY LOGIC
         #TODO:SHOOT DOWN LOGIC (WHILE IN AIR & PRESSIND DOWN KEY 's')
 
 
@@ -105,13 +109,16 @@ class Player(pygame.sprite.Sprite):
     def get_hit(self):
         self.hit = True
         self.hit_count = 0
+        if not self.dead() and not self.hit:
+            self.lose_life()
     
     def check_fall(self):
         if self.rect.bottom >= WIDTH*2:
             self.rect.x = self.x
             self.rect.y = self.y
-            self.hit= True
-            self.lose_life()
+            #self.hit= True
+            #self.lose_life()
+            self.get_hit()
             return True
         else: return False
 
@@ -170,11 +177,33 @@ class Player(pygame.sprite.Sprite):
         self.count = 0
         self.y_vel *= -1
 
+    def attatch_to_wall(self, wall):
+
+        if self.fall_count > 0 and self.rect.bottom <= (wall.rect.bottom-5):
+            self.y_vel *= 1/4
+            self.jump_count = 0
+            self.attached = True
+
+            if self.direction == "right" and self.x_vel == 0:
+                self.rect.right = wall.rect.left
+            elif self.direction == "left" and self.x_vel == 0:
+                self.rect.left = wall.rect.right
+            else:
+                self.attached = False
+
+        else:
+            self.attached = False
+
     def update_sprite(self):
         sprite_sheet = 'idle'
+
         if self.dashing:
             sprite_sheet = 'double_jump'
-        #5 Implementing hit animation (IMPORTANT TO PUT IT AT THE TOP)
+        ################# TODO: CHECK IF IT'S WORKING
+        elif self.attached:
+            sprite_sheet = 'wall_jump'
+            #print(self.SPRITES)
+       
         elif self.hit:
             sprite_sheet = "hit"
         elif self.y_vel < 0:

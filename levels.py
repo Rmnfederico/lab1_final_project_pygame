@@ -1,9 +1,9 @@
 import pygame
 
 class BaseLevel:
-    def __init__(self):
+    def __init__(self, coins, fruits, lifes): #replace items w/ a JSON
         self.enemies = None
-        self.objects = None
+        self.items = self.spawn_random_items(coins, fruits, lifes)
         self.platforms = None
         self.finished = False
         self.level_number = 0
@@ -29,7 +29,7 @@ class BaseLevel:
         #self.fps_meter = FPSCounter(self.max_fps, self.min_fps, self.average_fps)
         # end region
 
-    def draw_background(self, screen):
+    def draw_background(self, win):
         pass
     
     def create_platform(self):
@@ -38,8 +38,11 @@ class BaseLevel:
     def init_entities(self):
         pass
 
-    def spawn_random_items(self):
+    def spawn_random_items(self, coins, fruits, lifes):
         pass
+
+    def get_traps_names(self):
+        pass #TODO: TO CHECK PLAYER COLLISION W/ TRAPS
 
     def control_traps(self):
         pass
@@ -48,4 +51,8 @@ class BaseLevel:
         pass
     
     def is_finished(self):
+        pass
+    
+    def draw_all(self, win):
+        #move draw() function from main to here
         pass

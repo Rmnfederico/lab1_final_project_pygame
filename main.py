@@ -201,7 +201,6 @@ def main(window): ######## MAIN LOOP ########
     
     all_sprites.add(player, fire, *floor, *air_platform, *enemies) #TODO:
     
-
     offset_x = 0
     offset_y = 0
     scroll_area_width = 150
@@ -236,9 +235,9 @@ def main(window): ######## MAIN LOOP ########
                         player.jump()
                     else:
                         if player.direction == "right":
-                            player.x_vel -= 10
+                            player.x_vel -= 15
                         else:
-                            player.x_vel += 10
+                            player.x_vel += 15
                         player.jump()
 
                 if event.key == pygame.K_LSHIFT and not player.dashing:

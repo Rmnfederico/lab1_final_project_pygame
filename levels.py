@@ -1,7 +1,8 @@
 import pygame
 
 class BaseLevel:
-    def __init__(self, coins, fruits, lifes): #replace items w/ a JSON
+    def __init__(self, name, coins, fruits, lifes): #replace items w/ a JSON
+        self.name = name
         self.enemies = None
         self.items = self.spawn_random_items(coins, fruits, lifes)
         self.platforms = None
@@ -30,6 +31,9 @@ class BaseLevel:
         # end region
 
     def draw_background(self, win):
+        pass
+
+    def update(self):
         pass
     
     def create_platform(self):

@@ -4,6 +4,7 @@ from config import *
 from player import *
 from obj import *
 from enemy import *
+from menu import *
 
 pygame.init()
 
@@ -12,32 +13,34 @@ pygame.display.set_caption("Super Pixel boys")
 window = pygame.display.set_mode((WIDTH,HEIGHT))
 pygame.display.get_wm_info()
 
-def draw(window, background, bg_image, player, objects, enemies, offset_x, offset_y, scroll, groups):
-    for tile in background:
-        window.blit(bg_image, tile)
+def draw(window, background, bg_image, player, objects, enemies, offset_x, offset_y, scroll, groups, menus):
+    
+    if any(menu.is_active for menu in menus):
+        for menu in menus:
+            if menu.is_active:
+                menu.draw(window)
+    else:
+        for tile in background:
+            window.blit(bg_image, tile)
 
-    for obj in objects:
-        if not isinstance(obj, Enemy):
-            obj.draw(window, offset_x, offset_y)
-        #obj.draw(window, scroll)
+        for obj in objects:
+            if not isinstance(obj, Enemy):
+                obj.draw(window, offset_x, offset_y)
+            #obj.draw(window, scroll)
 
-    for enemy in enemies:
-        if groups[0].has(enemy): #ACA ESTA LA LOGICA PADREEEEEE
-            enemy.draw(window, offset_x,offset_y)
-            #MAKE THEM DISSAPEAR AFTER DEATH/EXPLOSION ANIMATION
-        #enemy.draw(window, scroll)
-        if enemy.name == "plant":
-            for bullet in enemy.active_bullets:
-                bullet.draw(window, offset_x,offset_y)
+        for enemy in enemies:
+            if groups[0].has(enemy): #ACA ESTA LA LOGICA PADREEEEEE
+                enemy.draw(window, offset_x,offset_y)
+                #MAKE THEM DISSAPEAR AFTER DEATH/EXPLOSION ANIMATION
+            #enemy.draw(window, scroll)
+            if enemy.name == "plant":
+                for bullet in enemy.active_bullets:
+                    bullet.draw(window, offset_x,offset_y)
 
-    #DRAW GROUP MAYBE?
-    # for group in groups:
-    #     group.draw(window)
-
-    player.draw(window, offset_x,offset_y)
-    for projectile in player.projectiles:
-        projectile.draw(window, offset_x,offset_y)
-    #player.draw(window, scroll)
+        player.draw(window, offset_x,offset_y)
+        for projectile in player.projectiles:
+            projectile.draw(window, offset_x,offset_y)
+        #player.draw(window, scroll)
 
     pygame.display.update()
 
@@ -154,12 +157,14 @@ def handle_move(player: Player, objects, enemies_group):
 def main(window): ######## MAIN LOOP ########
     clock = pygame.time.Clock()
     background, bg_image = get_background("Sky_wall.jpg")
-    #window.blit(bg_image, bg_image_rect)
-
-    rotate_counter = 0
 
     #True Scroll variable
     true_scroll = [0,0]
+
+    # Creating a main menu instance & menus list
+    menus_list = []
+    main_menu = MainMenu(0,0, True)
+    menus_list.append(main_menu)
 
     # Creating Groups for all the different sprites
     all_sprites = pygame.sprite.Group()
@@ -201,7 +206,6 @@ def main(window): ######## MAIN LOOP ########
     
     all_sprites.add(player, fire, *floor, *air_platform, *enemies) #TODO:
     
-
     offset_x = 0
     offset_y = 0
     scroll_area_width = 150
@@ -218,10 +222,6 @@ def main(window): ######## MAIN LOOP ########
     while running:
         clock.tick(FPS)
 
-        rotate_counter += 1
-        if rotate_counter > 360:
-            rotate_counter = 0
-
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -236,18 +236,21 @@ def main(window): ######## MAIN LOOP ########
                         player.jump()
                     else:
                         if player.direction == "right":
-                            player.x_vel -= 10
+                            player.x_vel -= 15
                         else:
-                            player.x_vel += 10
+                            player.x_vel += 15
                         player.jump()
 
                 if event.key == pygame.K_LSHIFT and not player.dashing:
                     player.dash()
                 if event.key == pygame.K_LCTRL:
-                    player.throw_projectile(rotate_counter)
+                    player.throw_projectile()
                     #TODO: CLEAR PROJECTILES LIST
 
         ### Updating and looping ALL ###
+
+        main_menu.update()
+
         player.loop(FPS)
 
         if player.check_fall():
@@ -292,7 +295,7 @@ def main(window): ######## MAIN LOOP ########
                     # UPDATE ALL SPRITES GROUPS
 
         handle_move(player, objects, enemies_group)
-        draw(window, background, bg_image, player, objects, enemies, offset_x, offset_y, scroll, [enemies_group])
+        draw(window, background, bg_image, player, objects, enemies, offset_x, offset_y, scroll, [enemies_group], menus_list)
 
         if ((player.rect.right - offset_x >= WIDTH - scroll_area_width) and player.x_vel > 0) or (
             (player.rect.left - offset_x <= scroll_area_width) and player.x_vel < 0):

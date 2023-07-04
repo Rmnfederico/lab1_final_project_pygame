@@ -92,7 +92,7 @@ class Player(pygame.sprite.Sprite):
         self.x_vel = 0
         self.dashing = False
     
-    def throw_projectile(self, rotate_counter):
+    def throw_projectile(self):
         if self.direction == "left":
             bomb = Bullet(self.rect.x, self.rect.y, "assets/Items/Throwables/bomb.jpg", -2, True)
         else:

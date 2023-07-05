@@ -113,5 +113,8 @@ class LevelsMenu(Menu):
 class PauseMenu(Menu):
     pass
 
+class GameOverMenu(Menu):
+    pass
+
 class EndLevelMenu(Menu):
     pass

@@ -23,12 +23,6 @@ class BaseLevel:
         self.last_update = 0
         self.delta_t = 0
         self.total_frames = 0
-        self.max_fps = 60
-        self.min_fps = 35
-        self.target_fps = (self.max_fps + self.min_fps)
-        self.average_fps = int((self.max_fps+self.min_fps)/2)
-        #self.fps_meter = FPSCounter(self.max_fps, self.min_fps, self.average_fps)
-        # end region
 
     def draw_background(self, win):
         pass

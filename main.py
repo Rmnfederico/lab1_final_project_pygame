@@ -5,6 +5,7 @@ from player import *
 from obj import *
 from enemy import *
 from menu import *
+from traps import *
 
 pygame.init()
 
@@ -33,6 +34,7 @@ def draw(window, background, bg_image, player, objects, enemies, offset_x, offse
                 enemy.draw(window, offset_x,offset_y)
                 #MAKE THEM DISSAPEAR AFTER DEATH/EXPLOSION ANIMATION
             #enemy.draw(window, scroll)
+            #TODO: REFACTOR CONDITION TO LOOK FOR SHOOTING ENEMIES
             if enemy.name == "plant":
                 for bullet in enemy.active_bullets:
                     bullet.draw(window, offset_x,offset_y)

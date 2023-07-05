@@ -1,7 +1,7 @@
 import threading
 import pygame
 from config import *
-from enemy import Bullet
+from enemy import Projectile
 
 class Player(pygame.sprite.Sprite):
     COLOR = (255, 0, 0)
@@ -94,9 +94,9 @@ class Player(pygame.sprite.Sprite):
     
     def throw_projectile(self):
         if self.direction == "left":
-            bomb = Bullet(self.rect.x, self.rect.y, "assets/Items/Throwables/bomb.jpg", -2, True)
+            bomb = Projectile(self.rect.x, self.rect.y, "assets/Items/Throwables/bomb.jpg", -2, True)
         else:
-            bomb = Bullet(self.rect.x, self.rect.y, "assets/Items/Throwables/bomb.jpg", 2, True)
+            bomb = Projectile(self.rect.x, self.rect.y, "assets/Items/Throwables/bomb.jpg", 2, True)
         bomb.image = pygame.transform.rotozoom(bomb.image, 0, 0.015)
         #bomb.image = bomb.rotate(rotate_counter)
         bomb.image.set_colorkey((255,255,255))

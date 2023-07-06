@@ -111,7 +111,9 @@ class LevelsMenu(Menu):
     pass
 
 class PauseMenu(Menu):
-    pass
+    def __init__(self, x, y, is_active=False):
+        super().__init__(x, y, is_active)
+        
 
 class GameOverMenu(Menu):
     pass

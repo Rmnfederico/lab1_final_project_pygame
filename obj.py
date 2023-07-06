@@ -11,12 +11,13 @@ class Object(pygame.sprite.Sprite):
         self.name = name
         self.is_trap = False
 
+    #MOST LIKELY NOT NECESSARY HERE; JUST IN ITEMS/TRAPS/PLATFORMS(NOT ALL OF THEM)
+    def update(self): 
+        pass
+
     def draw(self, win, offset_x, offset_y):
         win.blit(self.image, (self.rect.x - offset_x, self.rect.y - offset_y))
 
-    #MOST LIKELY NOT NECESSARY HERE; JUST IN ITEMS/TRAPS(NOT ALL OF THEM)
-    def update(self): 
-        pass
 
 class Block(Object):
     def __init__(self, x, y , size):

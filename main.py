@@ -15,11 +15,11 @@ window = pygame.display.set_mode((WIDTH,HEIGHT))
 pygame.display.get_wm_info()
 
 def draw(window, background, bg_image, player, objects, enemies, offset_x, offset_y, scroll, groups, menus):
-    
     if any(menu.is_active for menu in menus):
         for menu in menus:
             if menu.is_active:
                 menu.draw(window)
+                break
     else:
         for tile in background:
             window.blit(bg_image, tile)
@@ -45,6 +45,7 @@ def draw(window, background, bg_image, player, objects, enemies, offset_x, offse
         #player.draw(window, scroll)
 
     pygame.display.update()
+
 
 def handle_vertical_collision(player, objects, player_y_vel):
     collided_objects = []
@@ -166,7 +167,9 @@ def main(window): ######## MAIN LOOP ########
     # Creating a main menu instance & menus list
     menus_list = []
     main_menu = MainMenu(0,0, True)
-    menus_list.append(main_menu)
+    pause_menu_size = 288
+    pause_menu = PauseMenu((WIDTH//2-pause_menu_size/2), (HEIGHT//2-pause_menu_size*3/5), False, [main_menu])
+    menus_list.extend([main_menu, pause_menu])
 
     # Creating Groups for all the different sprites
     all_sprites = pygame.sprite.Group()
@@ -230,9 +233,15 @@ def main(window): ######## MAIN LOOP ########
                 break
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
-                    running = False
-                    pygame.quit()
-                    exit()
+                    if main_menu.is_active:
+                        running = False
+                        pygame.quit()
+                        exit()
+                    elif not pause_menu.is_active:
+                        pause_menu.is_active = True
+                    else:
+                        pause_menu.is_active = False
+
                 if event.key == pygame.K_SPACE and player.jump_count < 2:
                     if not player.attached:
                         player.jump()
@@ -252,6 +261,7 @@ def main(window): ######## MAIN LOOP ########
         ### Updating and looping ALL ###
 
         main_menu.update()
+        pause_menu.update()
 
         player.loop(FPS)
 

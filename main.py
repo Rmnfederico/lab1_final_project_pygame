@@ -1,6 +1,7 @@
 #import os, random, math
 import pygame
 from config import *
+from items import *
 from player import *
 from obj import *
 from enemy import *
@@ -14,7 +15,7 @@ pygame.display.set_caption("Super Pixel boys")
 window = pygame.display.set_mode((WIDTH,HEIGHT))
 pygame.display.get_wm_info()
 
-def draw(window, background, bg_image, player, objects, enemies, offset_x, offset_y, scroll, groups, menus):
+def draw(window, background, bg_image, player, objects, enemies, offset_x, offset_y, scroll, groups, items, menus):
     if any(menu.is_active for menu in menus):
         for menu in menus:
             if menu.is_active:
@@ -43,6 +44,9 @@ def draw(window, background, bg_image, player, objects, enemies, offset_x, offse
         for projectile in player.projectiles:
             projectile.draw(window, offset_x,offset_y)
         #player.draw(window, scroll)
+
+        for item in items:
+            item.draw(window, offset_x,offset_y)
 
     pygame.display.update()
 
@@ -183,6 +187,7 @@ def main(window): ######## MAIN LOOP ########
 
     objects_group = pygame.sprite.Group()
 
+
     #SEND TO CONSTANTS
     block_size = 96
     BUNNY_HEIGHT = 88 #WHY TF IS IT DOUBLE THE SIZE?
@@ -193,6 +198,18 @@ def main(window): ######## MAIN LOOP ########
     fire = Fire(250, HEIGHT - block_size - 64, 16, 32)
     fire.on()
     floor = [Block(i* block_size, HEIGHT - block_size, block_size) for i in range(-WIDTH // block_size, WIDTH*2 // block_size)]
+    
+    ##TODO: ITEMS GROUP -> MOVE TO JSON / LEVEL METHOD TO CREATE OBJS.
+    apple = Item(400, HEIGHT - block_size - 64, 32, 32, "apple")
+    bananas = Item(450, HEIGHT - block_size - 64, 32, 32, "bananas")
+    cherries = Item(500, HEIGHT - block_size - 64, 32, 32, "cherries")
+    bomb = Item(550, HEIGHT - block_size - 64, 32, 32, "bomb_2")
+    one_up = Item(600, HEIGHT - block_size - 64, 32, 32, "1up")
+    heart = Item(670, HEIGHT - block_size - 64, 32, 32, "heart")
+    coin = Item(750, HEIGHT - block_size - 64, 32, 32, "coin")
+
+
+    items_group = pygame.sprite.Group([apple,bananas, cherries, bomb, one_up, heart,coin])
 
     air_platform = [Block(i* block_size, HEIGHT - block_size*4, block_size) for i in range((WIDTH - 300) // block_size, WIDTH // block_size)]
     
@@ -269,6 +286,7 @@ def main(window): ######## MAIN LOOP ########
             offset_x, offset_y = player.x, player.y
 
         fire.loop()
+        items_group.update()
 
         #TO LEVEL LOGIC
         for enemy in enemies: 
@@ -300,6 +318,18 @@ def main(window): ######## MAIN LOOP ########
                         enemies_group.remove(enemy)
                         objects.remove(enemy) #TODO:ANIMATE DEATH AS WELL!!!
                         enemy.kill() #
+            
+        items_collision = pygame.sprite.spritecollide(player, items_group, False)
+        for item in items_collision:
+            if not item.grabbed:
+                item.grabbed = True
+                player.grab_item(item)
+                print(f"COLLISION w/ {item.name}")
+
+
+        # for item in items_group:
+        #     if pygame.sprite.collide_mask(player, item):
+        #         print("ITEM MASK COLLIDED")
 
                     #enemies.remove(enemy) # 
                     # ADD ALL SPRITES TO A GROUP
@@ -307,7 +337,7 @@ def main(window): ######## MAIN LOOP ########
                     # UPDATE ALL SPRITES GROUPS
 
         handle_move(player, objects, enemies_group)
-        draw(window, background, bg_image, player, objects, enemies, offset_x, offset_y, scroll, [enemies_group], menus_list)
+        draw(window, background, bg_image, player, objects, enemies, offset_x, offset_y, scroll, [enemies_group], items_group, menus_list)
 
         if ((player.rect.right - offset_x >= WIDTH - scroll_area_width) and player.x_vel > 0) or (
             (player.rect.left - offset_x <= scroll_area_width) and player.x_vel < 0):

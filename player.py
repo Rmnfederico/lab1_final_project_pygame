@@ -2,6 +2,7 @@ import threading
 import pygame
 from config import *
 from enemy import Projectile
+from items import Item
 
 class Player(pygame.sprite.Sprite):
     COLOR = (255, 0, 0)
@@ -35,6 +36,22 @@ class Player(pygame.sprite.Sprite):
         self.attached = False
         self.lives = 5
         self.projectiles = pygame.sprite.Group()
+        self.bombs = 10
+        self.coins = 0
+        self.fruits = 0
+
+        
+    def grab_item(self, item: Item):
+
+        if item.name == "bomb_3":
+            self.bombs += 1
+        elif item.name == "coin":
+            self.coins += 1
+        elif item.name == "1up":
+            self.lives += 1
+        else:
+            self.fruits += 1
+        print(f'player grabbed {item.name}')
 
     def lose_life(self):
         self.lives -= 1
@@ -93,13 +110,14 @@ class Player(pygame.sprite.Sprite):
         self.dashing = False
     
     def throw_projectile(self):
+        bomb_path = "assets/Items/Throwables/bomb_3.png"
         if self.direction == "left":
-            bomb = Projectile(self.rect.x, self.rect.y, "assets/Items/Throwables/bomb.jpg", -2, True)
+            bomb = Projectile(self.rect.x, self.rect.y, bomb_path, -2, True)
         else:
-            bomb = Projectile(self.rect.x, self.rect.y, "assets/Items/Throwables/bomb.jpg", 2, True)
-        bomb.image = pygame.transform.rotozoom(bomb.image, 0, 0.015)
+            bomb = Projectile(self.rect.x, self.rect.y, bomb_path, 2, True)
+        bomb.image = pygame.transform.rotozoom(bomb.image, 0, 0.75)
         #bomb.image = bomb.rotate(rotate_counter)
-        bomb.image.set_colorkey((255,255,255))
+        #bomb.image.set_colorkey((255,255,255))
         self.projectiles.add(bomb)
 
         #TODO:SHOOT DOWN LOGIC (WHILE IN AIR & PRESSIND DOWN KEY 's')

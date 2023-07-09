@@ -4,7 +4,8 @@ from config import *
 from projectile import Projectile
 
 class Enemy(pygame.sprite.Sprite):
-    ANIMATION_DELAY = 5 
+    ANIMATION_DELAY = 5
+    GRAVITY = 1
     #SPRITES = load_sprite_sheets() -> TO CHILD CLASSES?
     
     def __init__(self, x, y, width, height, name=None):
@@ -30,6 +31,7 @@ class Enemy(pygame.sprite.Sprite):
         self.ignore_default_sprite = False
         self.direction = "left"
         self.animation_count = 0
+        self.fall_count = 0
         self.hit = False
         self.hit_count = 0
         self.lives = None
@@ -54,7 +56,7 @@ class Enemy(pygame.sprite.Sprite):
             pass #TODO: DEATH SMOKE CLOUD ANIMATION IN SELF.POS
     
     def check_alive(self):
-        if self.lives == 0:
+        if self.lives < 1:
             self.alive = False
             self.animate_death()
     
@@ -64,16 +66,71 @@ class Enemy(pygame.sprite.Sprite):
         if self.lives > 0:
             self.lives -= 1
         self.check_alive()
+
+    def landed(self):
+        self.fall_count = 0
+        self.y_vel = 0
     
+    def hit_head(self):
+        self.count = 0
+        self.y_vel *= -1
+
+    def switch_direction(self):
+        if self.direction == "right":
+            self.direction = "left"
+        else:
+            self.direction = "right"
+
+    def handle_vertical_collision(self, objects):
+        collided_objects = []
+        for obj in objects:
+            if pygame.sprite.collide_mask(self, obj):
+                if self.y_vel > 0:
+                    self.rect.bottom = obj.rect.top
+                    self.landed()
+                elif self.y_vel < 0:
+                    self.rect.top = obj.rect.bottom
+                    self.hit_head()
+                collided_objects.append(obj)
+        
+        return collided_objects
+    
+    def check_horizontal_collision(self, objects, dx):
+        for obj in objects:
+            if pygame.sprite.collide_mask(self, obj):
+                if self.rect.bottom > (obj.rect.top+15):
+                    if self.x_vel > 0:
+                        self.rect.x -= 5
+                        self.switch_direction()
+                    else:
+                        self.rect.x += 5
+                        self.switch_direction()
+                    self.x_vel *= -1
+
+    
+    def handle_move(self, objects):
+        collide_left = self.check_horizontal_collision(objects, -self.x_vel*2)
+        collide_right = self.check_horizontal_collision(objects, self.x_vel*2)
+
+        if collide_left or collide_right:
+            self.x_vel *= -1
+        #TODO: NECESSARY? CHECK IF IMPLEMENTATION NEEDED
+        vertical_collide = self.handle_vertical_collision(objects)
+
+
     def loop(self):
         #Here handle:
         # - Attack
         # - Jump
         # - Move
-        # - Fall velocity
+        # - Gravity Apply / Fall velocity
+        self.y_vel += min(1, (self.fall_count / FPS) * self.GRAVITY)
+        self.fall_count +=1
+        self.rect.y += self.y_vel
         # - Hit counter
         # - Hit state
-        # - Hit counter
+        # - Collisions
+
         # - Etc.
         self.update_sprite()
 
@@ -116,7 +173,7 @@ class Bunny(Enemy):
             if self.rect.x <= self.x:  # Change the condition here
                 self.direction = self.right
                 self.x_vel = self.X_MAX_VEL  # Change the sign here
-            elif self.rect.x >= (self.x + 160):  # Change the condition here
+            elif self.rect.x >= (self.x + 550):  # Change the condition here
                 self.direction = self.left
                 self.x_vel = -self.X_MAX_VEL  # Change the sign here
 
@@ -128,7 +185,6 @@ class Bunny(Enemy):
         if not self.ignore_default_sprite:
             self.sprite_sheet = self.default_sprite
             self.ignore_default_sprite = True
-        #5 Implementing hit animation (IMPORTANT TO PUT IT AT THE TOP)
         if self.hit:
             self.sprite_sheet = "hit"
         elif self.y_vel < 0:
@@ -141,45 +197,6 @@ class Bunny(Enemy):
         elif self.x_vel != 0:
             self.sprite_sheet = 'run'
         super().update_sprite()
-
-# class Projectile(pygame.sprite.Sprite):
-#     GRAVITY = 1
-#     VOLLEY_POWER = 1
-
-#     def __init__(self, x, y, img_path, BULLET_SPEED, volley=False):
-#         super().__init__()
-#         self.image = pygame.transform.scale2x(pygame.image.load(img_path).convert_alpha())
-#         self.rect = self.image.get_rect(topleft=(x,y))
-#         self.speed = BULLET_SPEED
-#         self.volley = volley
-#         self.y_vel = 0
-#         self.fall_count = 0
-#         self.upwards = False
-#         #self.explosion_sprite = load_sprite_sheets() #TODO:
-
-#     def to_pieces(self):
-#         self.image = pygame.transform.scale2x(pygame.image.load(r"assets\Enemies\Plant\Bullet Pieces.png").convert_alpha())
-
-#     def rotate(self, angle):
-#         return pygame.transform.rotozoom(self.image, angle, 1)
-
-#     def apply_volley(self, FPS):
-#         if not self.upwards:
-#             self.y_vel = -1
-#             self.upwards = True
-#         self.y_vel += min(1, (self.fall_count / FPS) * self.GRAVITY)
-
-
-#     def update(self):
-#         if self.volley:
-#             self.apply_volley(FPS)
-#             self.rect.y += self.y_vel
-#             self.fall_count += 0.01
-
-#         self.rect.x += self.speed
-
-#     def draw(self, win, offset_x, offset_y):
-#         win.blit(self.image, (self.rect.x - offset_x, self.rect.y - offset_y))
 
 class Plant(Enemy):
     left, right = "right", "left"
@@ -240,3 +257,4 @@ class Plant(Enemy):
     def draw(self, win, offset_x, offset_y):
         #self.active_bullets.draw(win)
         super().draw(win, offset_x, offset_y)
+

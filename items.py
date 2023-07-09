@@ -5,22 +5,25 @@ class Item(Object):
 
     def __init__(self, x, y, width, height, name):
         super().__init__(x, y, width,height,name)
-        # self.rect = pygame.Rect(x, y, width, height)
-        # self.image = pygame.Surface((width, height), pygame.SRCALPHA)
-        # self.width = width
-        # self.height = height
-        # self.name = name
-        # self.is_trap = False
         self.sprites = load_sprite_sheets("Items", "Fruits", width, height)
         self.consumables_sprites = load_sprite_sheets("Items", "Consumables", width, height)
         self.sprites.update(self.consumables_sprites)
+
+        self.resize_imgs("bomb_2",0.7)
+        self.resize_imgs("coin",0.5)
+        self.resize_imgs("heart",0.6)
+
+
         self.image = self.sprites[name][0]
         self.mask = pygame.mask.from_surface(self.image)
         self.animation_count = 0
         self.animation_name = name
         self.grabbed = False
         self.dissapear_timer = 0
-        print(f'w:{self.image.get_width()} | h:{self.image.get_height()}')
+
+    def resize_imgs(self, sprite_name, scale):
+        for i, img in enumerate(self.sprites[sprite_name]):
+            self.sprites[sprite_name][i] = pygame.transform.rotozoom(img, 0, scale)
 
     def update_sprite(self):
         if self.grabbed:

@@ -152,7 +152,6 @@ def handle_move(player: Player, objects, enemies_group):
                 objects.remove(obj) #TODO:ANIMATE DEATH AS WELL!!!
                 obj.kill() #
 
-
             break
 
         elif obj and isinstance(obj, Enemy) and not player.hit and not obj.hit:
@@ -216,13 +215,20 @@ def main(window): ######## MAIN LOOP ########
     objects_group.add(fire, *floor, *air_platform)
 
     #NOTE: on_floor() helper func. to calc y coordinate for a sprite to be on top of main floor
-    enemies = [Bunny(700, HEIGHT-block_size-BUNNY_HEIGHT,34,44),
+    enemies = [Bunny(650, HEIGHT-(block_size*5)-BUNNY_HEIGHT,34,44),
                Plant(800,HEIGHT-block_size*4-84, 44, 42)]
 
     enemies_group.add(*enemies)
 
     objects = [*floor, Block(0,HEIGHT - block_size*2, block_size),
-               Block(block_size*3,HEIGHT-block_size*4, block_size), fire, *enemies,*air_platform]
+               Block(block_size*3,HEIGHT-block_size*4, block_size), fire, *enemies,*air_platform,
+               Block(1200, HEIGHT - block_size*2, block_size),
+               Block(800, HEIGHT - block_size*2, block_size)]
+    
+    platforms = [*floor, Block(0,HEIGHT - block_size*2, block_size),
+               Block(block_size*3,HEIGHT-block_size*4, block_size), fire, *air_platform,
+               Block(1200, HEIGHT - block_size*2, block_size),
+               Block(800, HEIGHT - block_size*2, block_size)]
 
     objects_group.add(objects[31], objects[32]) #REFACTOR THIS CRAP 
     
@@ -291,6 +297,8 @@ def main(window): ######## MAIN LOOP ########
         #TO LEVEL LOGIC
         for enemy in enemies: 
             enemy.loop()
+            #enemy.handle_vertical_collision(platforms)
+            enemy.handle_move(platforms)
             if enemy.name == "plant" and enemy.alive:
                 enemy.shoot(offset_x, player)
                 #TODO: FIX BULLETS OFFSET_X TO MATCH PLANT's X POS.

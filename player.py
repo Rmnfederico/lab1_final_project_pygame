@@ -2,7 +2,7 @@ import threading
 import pygame
 from config import *
 from enemy import Projectile
-from items import Item
+
 
 class Player(pygame.sprite.Sprite):
     COLOR = (255, 0, 0)
@@ -26,9 +26,7 @@ class Player(pygame.sprite.Sprite):
         self.animation_count = 0
         self.fall_count = 0
         self.jump_count = 0
-        #1 Adding a variable to control hit state
         self.hit = False
-        #2. Adding a variable to control the 'flashing' effect time when hit
         self.hit_count = 0
         self.dashing = False
         self.dashing_time = 0
@@ -41,8 +39,7 @@ class Player(pygame.sprite.Sprite):
         self.fruits = 0
 
         
-    def grab_item(self, item: Item):
-
+    def grab_item(self, item):
         if item.name == "bomb_3":
             self.bombs += 1
         elif item.name == "coin":
@@ -56,8 +53,8 @@ class Player(pygame.sprite.Sprite):
     def lose_life(self):
         self.lives -= 1
 
-    def dead(self):
-        if self.lives <= 0:
+    def check_death(self):
+        if self.lives < 1:
             return True
         else:
             return False
@@ -110,32 +107,28 @@ class Player(pygame.sprite.Sprite):
         self.dashing = False
     
     def throw_projectile(self):
-        bomb_path = "assets/Items/Throwables/bomb_3.png"
-        if self.direction == "left":
-            bomb = Projectile(self.rect.x, self.rect.y, bomb_path, -2, True)
-        else:
-            bomb = Projectile(self.rect.x, self.rect.y, bomb_path, 2, True)
-        bomb.image = pygame.transform.rotozoom(bomb.image, 0, 0.75)
-        #bomb.image = bomb.rotate(rotate_counter)
-        #bomb.image.set_colorkey((255,255,255))
-        self.projectiles.add(bomb)
-
+        print(f'bombs:{self.bombs}')
+        if self.bombs > 0:
+            bomb_path = "assets/Items/Throwables/bomb_3.png"
+            if self.direction == "left":
+                bomb = Projectile(self.rect.x, self.rect.y, bomb_path, -2, True)
+            else:
+                bomb = Projectile(self.rect.x, self.rect.y, bomb_path, 2, True)
+            bomb.image = pygame.transform.rotozoom(bomb.image, 0, 0.75)
+            self.projectiles.add(bomb)
+            self.bombs -= 1
         #TODO:SHOOT DOWN LOGIC (WHILE IN AIR & PRESSIND DOWN KEY 's')
 
-
-    #3 Method to control hit state
     def get_hit(self):
         self.hit = True
         self.hit_count = 0
-        if not self.dead() and not self.hit:
+        if not self.check_death() and not self.hit:
             self.lose_life()
     
     def check_fall(self):
         if self.rect.bottom >= WIDTH*2:
             self.rect.x = self.x
             self.rect.y = self.y
-            #self.hit= True
-            #self.lose_life()
             self.get_hit()
             return True
         else: return False

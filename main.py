@@ -15,7 +15,7 @@ pygame.display.set_caption("Super Pixel boys")
 window = pygame.display.set_mode((WIDTH,HEIGHT))
 pygame.display.get_wm_info()
 
-def draw(window, background, bg_image, player, objects, enemies, offset_x, offset_y, scroll, groups, items, menus):
+def draw(window, background, bg_image, player, objects, enemies, offset_x, offset_y, groups, items, menus):
     if any(menu.is_active for menu in menus):
         for menu in menus:
             if menu.is_active:
@@ -28,7 +28,6 @@ def draw(window, background, bg_image, player, objects, enemies, offset_x, offse
         for obj in objects:
             if not isinstance(obj, Enemy):
                 obj.draw(window, offset_x, offset_y)
-            #obj.draw(window, scroll)
 
         for enemy in enemies:
             if groups[0].has(enemy): #ACA ESTA LA LOGICA PADREEEEEE
@@ -43,7 +42,6 @@ def draw(window, background, bg_image, player, objects, enemies, offset_x, offse
         player.draw(window, offset_x,offset_y)
         for projectile in player.projectiles:
             projectile.draw(window, offset_x,offset_y)
-        #player.draw(window, scroll)
 
         for item in items:
             item.draw(window, offset_x,offset_y)
@@ -66,26 +64,6 @@ def handle_vertical_collision(player, objects, player_y_vel):
     return collided_objects
 
 ##################
-def handle_vertical_collision_group(player, objects_group, player_y_vel):
-    #collided_objects = []
-    collided_objects = pygame.sprite.spritecollide(player, objects_group, False)
-    if collided_objects:
-        for obj in collided_objects:
-            #if pygame.sprite.collide_mask(player, obj):
-            if player_y_vel > 0:
-                if not isinstance(obj, Enemy):
-                    player.rect.bottom = obj.rect.top
-                    player.landed()
-                else:
-                    if obj and player.rect.bottom <= obj.rect.top and obj.name == "bunny" and not player.hit:
-                        obj.get_hit()
-                        print("HIT BUNNY ON TOP 2")
-            elif player_y_vel < 0:
-                player.rect.top = obj.rect.bottom
-                player.hit_head()
-            #collided_objects.append(obj)
-    return collided_objects
-##################
 
 def collide(player, objects, dx):
     player.move(dx, 0)
@@ -99,20 +77,6 @@ def collide(player, objects, dx):
     player.update()
     return collided_object
 
-##################
-def collide_group(player, objects_group, dx):
-    player.move(dx, 0)
-    player.update()
-    #collided_objects = None
-    collided_objects = pygame.sprite.spritecollide(player, objects_group)
-    # for obj in objects_group:
-    #     if pygame.sprite.collide_mask(player, obj):
-    #         collided_objects = obj
-
-            #break
-    player.move(-dx, 0)
-    player.update()
-    return collided_objects
 ##################
 
 def handle_move(player: Player, objects, enemies_group):
@@ -156,8 +120,6 @@ def handle_move(player: Player, objects, enemies_group):
 
         elif obj and isinstance(obj, Enemy) and not player.hit and not obj.hit:
             player.get_hit()
-
-            #player.lose_life()
 
 
 def main(window): ######## MAIN LOOP ########
@@ -216,7 +178,10 @@ def main(window): ######## MAIN LOOP ########
 
     #NOTE: on_floor() helper func. to calc y coordinate for a sprite to be on top of main floor
     enemies = [Bunny(650, HEIGHT-(block_size*5)-BUNNY_HEIGHT,34,44),
-               Plant(800,HEIGHT-block_size*4-84, 44, 42)]
+               Plant(800,HEIGHT-block_size*4-84, 44, 42),
+               Chameleon(-500, HEIGHT-block_size-170, 84, 38),
+               Ghost(-1000, HEIGHT-block_size-88, 44, 30),
+               Slime(-700, HEIGHT-block_size-88, 44, 30)]
 
     enemies_group.add(*enemies)
 
@@ -238,12 +203,6 @@ def main(window): ######## MAIN LOOP ########
     offset_y = 0
     scroll_area_width = 150
 
-    #Fluffly scrolling / Parallax
-    true_scroll[0] += (player.rect.x-true_scroll[0]-(WIDTH//2 + player.rect.width//2))/20
-    true_scroll[1] += (player.rect.y-true_scroll[1]-(HEIGHT//2+player.rect.height//2))/20
-    scroll = true_scroll.copy()
-    scroll[0] = int(scroll[0])
-    scroll[1] = int(scroll[1])
     #############################
 
     running = True
@@ -295,9 +254,12 @@ def main(window): ######## MAIN LOOP ########
         items_group.update()
 
         #TO LEVEL LOGIC
-        for enemy in enemies: 
-            enemy.loop()
-            #enemy.handle_vertical_collision(platforms)
+        for enemy in enemies:
+            if not enemy.can_attack: 
+                enemy.loop()
+            else:
+                enemy.loop(player)
+
             enemy.handle_move(platforms)
             if enemy.name == "plant" and enemy.alive:
                 enemy.shoot(offset_x, player)
@@ -345,7 +307,7 @@ def main(window): ######## MAIN LOOP ########
                     # UPDATE ALL SPRITES GROUPS
 
         handle_move(player, objects, enemies_group)
-        draw(window, background, bg_image, player, objects, enemies, offset_x, offset_y, scroll, [enemies_group], items_group, menus_list)
+        draw(window, background, bg_image, player, objects, enemies, offset_x, offset_y, [enemies_group], items_group, menus_list)
 
         if ((player.rect.right - offset_x >= WIDTH - scroll_area_width) and player.x_vel > 0) or (
             (player.rect.left - offset_x <= scroll_area_width) and player.x_vel < 0):

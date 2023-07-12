@@ -40,7 +40,7 @@ class Player(pygame.sprite.Sprite):
 
         
     def grab_item(self, item):
-        if item.name == "bomb_3":
+        if item.name == "bomb_2":
             self.bombs += 1
         elif item.name == "coin":
             self.coins += 1
@@ -116,7 +116,9 @@ class Player(pygame.sprite.Sprite):
                 bomb = Projectile(self.rect.x, self.rect.y, bomb_path, 2, True)
             bomb.image = pygame.transform.rotozoom(bomb.image, 0, 0.75)
             self.projectiles.add(bomb)
-            self.bombs -= 1
+            if self.bombs > 0:
+                self.bombs -= 1
+            print(f'bombs:{self.bombs}')
         #TODO:SHOOT DOWN LOGIC (WHILE IN AIR & PRESSIND DOWN KEY 's')
 
     def get_hit(self):

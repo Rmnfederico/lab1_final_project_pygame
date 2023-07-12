@@ -124,28 +124,22 @@ def handle_move(player: Player, objects, enemies_group):
 
 def main(window): ######## MAIN LOOP ########
     clock = pygame.time.Clock()
+    #TODO: REPLACE WITH LEVEL BACKGROUND
     background, bg_image = get_background("Sky_wall.jpg")
-
-    #True Scroll variable
-    true_scroll = [0,0]
 
     # Creating a main menu instance & menus list
     menus_list = []
     main_menu = MainMenu(0,0, True)
-    pause_menu_size = 288
+    #pause_menu_size = 288
     pause_menu = PauseMenu((WIDTH//2-pause_menu_size/2), (HEIGHT//2-pause_menu_size*3/5), False, [main_menu])
     menus_list.extend([main_menu, pause_menu])
 
     # Creating Groups for all the different sprites
     all_sprites = pygame.sprite.Group()
-
     platforms_group: pygame.sprite.Group()
-
     player_group = pygame.sprite.GroupSingle()
-    
     enemies_group = pygame.sprite.Group()
     enemy_bullets = pygame.sprite.Group()
-
     objects_group = pygame.sprite.Group()
 
 

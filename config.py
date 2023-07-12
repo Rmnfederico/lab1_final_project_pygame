@@ -2,10 +2,18 @@ import pygame
 from os import listdir
 from os.path import isfile, join
 
+### GLOBAL CONSTANTS ###
+
 BG_COLOR = (255, 255, 255)
 WIDTH, HEIGHT = 1000,800
 FPS = 60
 PLAYER_VEL = 5
+
+### CLASS CONSTANTS ###
+block_size = 96
+pause_menu_size = 288
+
+### INSTANCES & GROUPS ###
 
 
 ### Helper Funcs. ###

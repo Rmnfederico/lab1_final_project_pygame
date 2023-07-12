@@ -151,16 +151,13 @@ class Enemy(pygame.sprite.Sprite):
     def attack(self, player):
         if self.can_attack:
             attack_distance = 70
-            print(f'vel before:{self.x_vel}')
             if player.rect.top < self.rect.bottom and player.rect.bottom > self.rect.top:
                 if abs(self.rect.centerx - player.rect.centerx) < attack_distance:
                     print("Attacking")
                     self.x_vel = 0
                     self.attacking = True
             else:
-                print(f'{self.name} sprite:{self.sprite_sheet}')
                 self.attacking = False
-                print(f'vel after:{self.x_vel}')
             if self.x_vel < 1:
                 #self.patrol()
                 self.chase(player)
@@ -409,4 +406,11 @@ class Slime(Enemy):
             self.sprite_sheet = 'idle-run'
         elif self.x_vel == 0:
             self.sprite_sheet = 'idle-run'
+        return super().update_sprite()
+    
+class PumpkingBoss(Enemy):
+    def __init__(self, x, y, width, height):
+        super().__init__(x, y, width, height, "pumpking_boss")
+
+    def update_sprite(self):
         return super().update_sprite()

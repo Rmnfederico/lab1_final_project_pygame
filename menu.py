@@ -1,6 +1,6 @@
 import pygame
-from config import *
 from button import *
+from config import *
 
 class Menu:
     def __init__(self,x, y, is_active=False, related_menus=None):

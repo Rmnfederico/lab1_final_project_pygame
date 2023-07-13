@@ -42,7 +42,7 @@ class Level:
         self.objects_group = pygame.sprite.Group()
         self.objects_group.add(*terrain, *traps)
 
-        self.items = self.spawn_random_items(coins, fruits, lifes)
+        self.items = pygame.sprite.Group(*(self.spawn_random_items(coins, fruits, lifes)))
         self.pause_menu = menus["pause_menu"]
         self.endlevel_menu = menus["endlevel"]
         self.game_over_menu = menus["game_over"]
@@ -50,11 +50,10 @@ class Level:
         self.paused = False
         self.finished = False
         self.is_active = False
-        self.timer = timer
+        self.timer = timer * FPS
         self.level_number = level_number
         self.next_level = next_level
         self.unlocked = unlocked
-        #self.save_initial_entities()
 
         self.offset_x = 0
         self.offsext_y = 0
@@ -105,6 +104,12 @@ class Level:
                 lifes_counter += 1
         return random_items
 
+    def calculate_score(self):
+        total_score = 0
+        total_score += (self.player.coins*10)
+        total_score += (self.player.fruits*5)
+        total_score += (self.timer*20)
+        return total_score
 
     def draw_player_lives(self, window):
         pass
@@ -115,10 +120,12 @@ class Level:
     def pause(self):
         if not self.paused:
             self.paused = True
+            self.pause_menu.is_active = True
 
     def show_endlevel_menu(self):
         if self.finished:
-            pass
+            final_score = self.calculate_score()
+            self.endlevel_menu.is_active = True
 
     def init_entities(self, player, enemies, traps, platforms):
         pass
@@ -138,12 +145,13 @@ class Level:
         self.enemies = self.original_enemies
         self.traps = self.original_traps
         self.platforms = self.original_platforms
-        self.spawn_random_items(self.original_coins, self.original_fruits, self.original_lifes)
+        self.items = pygame.sprite.Group(*self.spawn_random_items(self.original_coins, self.original_fruits, self.original_lifes))
 
     def restart_level(self):
         for button in self.pause_menu.buttons:
             if button.name == "restart" and button.clicked:
                 self.reset_entities()
+                self.offset_x, self.offset_y = self.player.x, self.player.y
 
 
     def animate_background(self):
@@ -180,7 +188,8 @@ class Level:
                     if enemy.active_bullets:
                         if pygame.sprite.spritecollide(self.player, enemy.active_bullets, True):
                             self.player.get_hit()
-
+            
+            self.calculate_offset()
 
 
     def create_platform(self, height_multiplier, start, end):
@@ -308,6 +317,7 @@ class Level:
             #TODO: HERE DRAW BACKGROUND
             # for tile in background:
             #     window.blit(bg_image, tile)
+            window.blit(self.bg_image, (0,0))
 
             for obj in self.objects:
                 if not isinstance(obj, Enemy):

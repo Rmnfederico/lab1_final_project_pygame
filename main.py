@@ -37,6 +37,7 @@ def draw(window, background, bg_image, player, objects, enemies, offset_x, offse
             #TODO: REFACTOR CONDITION TO LOOK FOR SHOOTING ENEMIES
             if enemy.name == "plant":
                 for bullet in enemy.active_bullets:
+                    #TODO: THIS LINE MOST LIKELY BUGGING BULLET SPAWN
                     bullet.draw(window, offset_x,offset_y)
 
         player.draw(window, offset_x,offset_y)
@@ -79,7 +80,7 @@ def collide(player, objects, dx):
 
 ##################
 
-def handle_move(player: Player, objects, enemies_group):
+def handle_move(player: Player, objects):
     keys = pygame.key.get_pressed()
 
     player.x_vel = 0 #This way no flag is needed to know if player is moving
@@ -180,7 +181,8 @@ def main(window): ######## MAIN LOOP ########
     enemies_group.add(*enemies)
 
     objects = [*floor, Block(0,HEIGHT - block_size*2, block_size),
-               Block(block_size*3,HEIGHT-block_size*4, block_size), fire, *enemies,*air_platform,
+               Block(block_size*3,HEIGHT-block_size*4, block_size),
+                fire, *enemies,*air_platform,
                Block(1200, HEIGHT - block_size*2, block_size),
                Block(800, HEIGHT - block_size*2, block_size)]
     
@@ -189,7 +191,8 @@ def main(window): ######## MAIN LOOP ########
                Block(1200, HEIGHT - block_size*2, block_size),
                Block(800, HEIGHT - block_size*2, block_size)]
 
-    objects_group.add(objects[31], objects[32]) #REFACTOR THIS CRAP 
+    objects_group.add(objects[31], objects[32]) #REFACTOR THIS CRAP
+    print(f'objs 31/32:{objects[31]} | {objects[32]}') 
     
     all_sprites.add(player, fire, *floor, *air_platform, *enemies) #TODO:
     
@@ -300,7 +303,7 @@ def main(window): ######## MAIN LOOP ########
                     # REFACTOR DRAW / DIRECTLY DRAW SPRITE GROUPS
                     # UPDATE ALL SPRITES GROUPS
 
-        handle_move(player, objects, enemies_group)
+        handle_move(player, objects)
         draw(window, background, bg_image, player, objects, enemies, offset_x, offset_y, [enemies_group], items_group, menus_list)
 
         if ((player.rect.right - offset_x >= WIDTH - scroll_area_width) and player.x_vel > 0) or (

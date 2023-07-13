@@ -15,6 +15,9 @@ class Object(pygame.sprite.Sprite):
     def update(self): 
         pass
 
+    def loop(self):
+        pass
+
     def draw(self, win, offset_x, offset_y):
         win.blit(self.image, (self.rect.x - offset_x, self.rect.y - offset_y))
 

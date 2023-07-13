@@ -7,6 +7,7 @@ from obj import *
 from enemy import *
 from menu import *
 from traps import *
+from levels import *
 
 pygame.init()
 
@@ -122,6 +123,22 @@ def handle_move(player: Player, objects):
         elif obj and isinstance(obj, Enemy) and not player.hit and not obj.hit:
             player.get_hit()
 
+#TODO: LEVEL BACKGROUNDS TEST
+#lvl_1_bg_img = pygame.image.load("assets/bgs/lvls/lvl_1.png").convert_alpha()
+#lvl_2_bg_img = pygame.image.load("assets/bgs/lvls/lvl_2.png").convert_alpha()
+#lvl_3_bg_img = pygame.image.load("assets/bgs/lvls/lvl_3.png").convert_alpha()
+
+lvl_1_bg = load_sprite_sheets("bgs","lvl_1", 990, 800, False)
+lvl_2_bg = load_sprite_sheets("bgs","lvl_2", 780, 558, False)
+lvl_3_bg = load_sprite_sheets("bgs","lvl_3", 540, 370, False)
+
+
+# for i, sprite in enumerate(lvl_1_bg["lvl_1"]):
+#     lvl_1_bg["lvl_1"] = pygame.transform.scale(sprite, (WIDTH, HEIGHT*4/3))
+
+# for i, sprite in enumerate(lvl_2_bg["lvl_2"]):
+#     lvl_2_bg["lvl_2"] = pygame.transform.scale(sprite, (WIDTH, HEIGHT*7/8))
+
 
 def main(window): ######## MAIN LOOP ########
     clock = pygame.time.Clock()
@@ -130,10 +147,19 @@ def main(window): ######## MAIN LOOP ########
 
     # Creating a main menu instance & menus list
     menus_list = []
+    menus_dict = {}
     main_menu = MainMenu(0,0, True)
     #pause_menu_size = 288
     pause_menu = PauseMenu((WIDTH//2-pause_menu_size/2), (HEIGHT//2-pause_menu_size*3/5), False, [main_menu])
+
     menus_list.extend([main_menu, pause_menu])
+
+    menus_dict["main_menu"] = main_menu
+    menus_dict["level_select"] = None
+    menus_dict["pause_menu"] = pause_menu
+    menus_dict["game_over"] = None
+    menus_dict["endlevel"] = None
+    #TODO: LEVEL SELECT /  ENDLEVEL MENU
 
     # Creating Groups for all the different sprites
     all_sprites = pygame.sprite.Group()
@@ -199,6 +225,9 @@ def main(window): ######## MAIN LOOP ########
     offset_x = 0
     offset_y = 0
     scroll_area_width = 150
+
+    lvl_2 = Level("Level 2", "lvl_2", lvl_2_bg, 2, floor, player, enemies, enemies_group, [fire], None, 3, 4, 2, 60, menus_dict, None, False)
+    lvl_1 = Level("Level 1", "lvl_1", lvl_1_bg, 1, platforms, player, enemies, enemies_group, [fire], None, 3, 4, 2, 60, menus_dict, lvl_2, False)
 
     #############################
 

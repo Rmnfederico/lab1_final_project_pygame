@@ -1,14 +1,32 @@
 import copy
+import random
 import pygame
 from config import *
 from enemy import Enemy
+from items import Item
 
 from obj import Block
 
 class Level:
-    def __init__(self, name, bg_sprite, level_number, terrain, player, enemies, enemies_group, traps, platforms, coins, fruits, lifes, timer, menus, next_level, unlocked): #replace items w/ a JSON
+    def __init__(self, name, bg_name, bg_sprite, level_number, terrain, player, enemies, enemies_group, traps, platforms, coins, fruits, lifes, timer, menus, next_level, unlocked): #replace items w/ a JSON
+        
+        self.original_terrain = terrain
+        self.original_player = player
+        self.original_enemies = enemies
+        self.original_traps = traps
+        self.original_platforms = platforms
+        self.original_coins = coins
+        self.original_fruits = fruits
+        self.original_lifes = lifes
+        
         self.name = name
+        self.bg_animation_name = bg_name
         self.bg_sprite = bg_sprite
+        print(f'bg_sprite:{bg_sprite} | anim. name:{self.bg_animation_name}')
+        self.bg_image = bg_sprite[self.bg_animation_name][0]
+        self.bg_animation_delay = 10
+        self.bg_animation_count = 0
+
         self.terrain = terrain
         self.player = player
         self.enemies = enemies
@@ -25,7 +43,7 @@ class Level:
         self.objects_group.add(*terrain, *traps)
 
         self.items = self.spawn_random_items(coins, fruits, lifes)
-        self.pause_menu = menus["pause"]
+        self.pause_menu = menus["pause_menu"]
         self.endlevel_menu = menus["endlevel"]
         self.game_over_menu = menus["game_over"]
         self.menus = [self.pause_menu, self.endlevel_menu, self.game_over_menu]
@@ -36,7 +54,7 @@ class Level:
         self.level_number = level_number
         self.next_level = next_level
         self.unlocked = unlocked
-        self.save_initial_entities()
+        #self.save_initial_entities()
 
         self.offset_x = 0
         self.offsext_y = 0
@@ -65,8 +83,28 @@ class Level:
                     furthest = block
         return furthest
 
-    def spawn_random_items(self, coins, fruits, lifes, amount):
-        pass
+    def spawn_random_items(self, coins, fruits, lifes):
+        random_items = []
+        coins_counter = 0
+        fruits_counter = 0
+        lifes_counter = 0
+        total_items = coins + fruits + lifes
+        blocks = [block for block in self.terrain if isinstance(block, Block)]
+        for i in range(total_items):
+            block = random.choice(blocks)
+            #item = random.choice(["coin", "one_up", "apple", "cherries", "bananas"])
+            if coins_counter < coins:
+                random_items.append(Item(block.rect.x, block.rect.y-64, 32, 32, "coin"))
+                coins_counter += 1
+            elif fruits_counter < fruits:
+                fruit_name = random.choice(["apple", "bananas", "cherries"])
+                random_items.append(Item(block.rect.x, block.rect.y-64, 32, 32, fruit_name))
+                fruits_counter += 1
+            elif lifes_counter < lifes:
+                random_items.append(Item(block.rect.x, block.rect.y-64, 32, 32, "1up"))
+                lifes_counter += 1
+        return random_items
+
 
     def draw_player_lives(self, window):
         pass
@@ -85,23 +123,22 @@ class Level:
     def init_entities(self, player, enemies, traps, platforms):
         pass
 
-    def save_initial_entities(self):
-        self.original_terrain = copy.deepcopy(self.terrain)
-        self.original_player = copy.deepcopy(self.player)
-        self.original_enemies = copy.deepcopy(self.enemies)
-        self.original_traps = copy.deepcopy(self.traps)
-        self.original_platforms = copy.deepcopy(self.platforms)
-        self.original_coins = copy.deepcopy(self.coins)
-        self.original_fruits = copy.deepcopy(self.fruits)
+    # def save_initial_entities(self):
+    #     self.original_terrain = terrain
+    #     self.original_player = player
+    #     self.original_enemies = enemies
+    #     self.original_traps = traps
+    #     self.original_platforms = platforms
+    #     self.original_coins = coins
+    #     self.original_fruits = fruits
 
     def reset_entities(self):
-        self.terrain = copy.deepcopy(self.original_terrain)
-        self.player = copy.deepcopy(self.original_player)
-        self.enemies = copy.deepcopy(self.original_enemies)
-        self.traps = copy.deepcopy(self.original_traps)
-        self.platforms = copy.deepcopy(self.original_platforms)
-        self.coins = copy.deepcopy(self.original_coins)
-        self.fruits = copy.deepcopy(self.original_fruits)
+        self.terrain = self.original_terrain
+        self.player = self.original_player
+        self.enemies = self.original_enemies
+        self.traps = self.original_traps
+        self.platforms = self.original_platforms
+        self.spawn_random_items(self.original_coins, self.original_fruits, self.original_lifes)
 
     def restart_level(self):
         for button in self.pause_menu.buttons:
@@ -110,7 +147,14 @@ class Level:
 
 
     def animate_background(self):
-        pass
+        sprites = self.bg_sprite[self.bg_animation_name]
+        total_frames = len(sprites)
+        sprite_index = (self.bg_animation_count // self.bg_animation_delay) % total_frames
+        self.bg_image = sprites[sprite_index]
+        self.bg_animation_count += 1
+
+        if self.bg_animation_count >= (total_frames*2) * self.bg_animation_delay:
+            self.bg_animation_count = 0
 
     def handle_events(self):
         pass

@@ -45,8 +45,14 @@ class MainMenu(Menu):
         self.animation_name = "cascade-sprite"
         self.sprites = load_sprite_sheets("","bgs", (int(WIDTH*0.886)), HEIGHT, False)
         
+        # self.animation_name = "lvl_3"
+        # self.sprites = load_sprite_sheets("bgs","lvls", 540, 370, False)
+
         for i, sprite in enumerate(self.sprites[self.animation_name]):
             self.sprites[self.animation_name][i] = pygame.transform.scale(sprite, (WIDTH, HEIGHT+(HEIGHT*2/3)))
+            #self.sprites[self.animation_name][i] = pygame.transform.scale(sprite, (WIDTH, HEIGHT*4/3))
+            #self.sprites[self.animation_name][i] = pygame.transform.scale(sprite, (WIDTH, HEIGHT))
+            #lvl 3 DOES NOT NEED RESIZING
 
         self.image = self.sprites[self.animation_name][0]
         self.rect = self.image.get_rect(topleft=(x,y))
@@ -115,7 +121,41 @@ class CharacterSelectMenu(Menu):
     pass
 
 class LevelsMenu(Menu):
-    pass
+    def __init__(self, x, y, is_active=False, related_menus=None):
+        super().__init__(x, y, is_active, related_menus)
+        self.animation_name = "cascade-sprite"
+        self.sprites = load_sprite_sheets("","bgs", (int(WIDTH*0.886)), HEIGHT, False)
+        
+        for i, sprite in enumerate(self.sprites[self.animation_name]):
+            self.sprites[self.animation_name][i] = pygame.transform.scale(sprite, (WIDTH, HEIGHT+(HEIGHT*2/3)))
+
+        self.image = self.sprites[self.animation_name][0]
+        self.rect = self.image.get_rect(topleft=(x,y))
+        self.animation_count = 0
+        self.ANIMATION_DELAY = 8
+
+    def create_buttons(self):
+        buttons_list = []
+
+        lvl_1_img = None
+        lvl_2_img = None
+        lvl_3_img = None
+
+        back_btn = None
+
+        buttons_list.extend([lvl_1_img, lvl_2_img, lvl_3_img, back_btn])
+        return buttons_list
+    
+    def handle_events(self):
+        if self.is_active:
+            for button in self.buttons:
+                pass
+
+    def update(self):
+        if self.is_active:
+            for button in self.buttons:
+                pass
+
 
 class PauseMenu(Menu):
     def __init__(self, x, y, is_active, related_menus):

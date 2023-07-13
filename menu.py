@@ -121,8 +121,9 @@ class CharacterSelectMenu(Menu):
     pass
 
 class LevelsMenu(Menu):
-    def __init__(self, x, y, is_active=False, related_menus=None):
+    def __init__(self, x, y, is_active, related_menus, levels):
         super().__init__(x, y, is_active, related_menus)
+        self.levels = levels
         self.animation_name = "cascade-sprite"
         self.sprites = load_sprite_sheets("","bgs", (int(WIDTH*0.886)), HEIGHT, False)
         
@@ -137,13 +138,19 @@ class LevelsMenu(Menu):
     def create_buttons(self):
         buttons_list = []
 
-        lvl_1_img = None
-        lvl_2_img = None
-        lvl_3_img = None
+        flat_btn = pygame.image.load("assets/buttons/layer3.png").convert_alpha()
 
-        back_btn = None
+        lvl_1_img = pygame.image.load("assets/Menu/lvl_imgs/lvl_1.gif").convert_alpha()
+        lvl_2_img = pygame.image.load("assets/Menu/lvl_imgs/lvl_2.gif").convert_alpha()
+        lvl_3_img = pygame.image.load("assets/Menu/lvl_imgs/lvl_3.gif").convert_alpha()
 
-        buttons_list.extend([lvl_1_img, lvl_2_img, lvl_3_img, back_btn])
+        lvl_1_btn = Button(200, HEIGHT/2, lvl_1_img, 0.3, False, "play")
+        lvl_2_btn = Button(400, HEIGHT/2, lvl_2_img, 0.3, False, "play")
+        lvl_3_btn = Button(600, HEIGHT/2, lvl_3_img, 0.3, False, "play")
+
+        back_btn = TextButton(WIDTH/2, 620, flat_btn, 0.3, False, "back", 'assets/fonts/8Bit-44Pl.ttf',"Back",50, offset=[0,-10])
+
+        buttons_list.extend([lvl_1_btn, lvl_2_btn, lvl_3_btn, back_btn])
         return buttons_list
     
     def handle_events(self):
@@ -154,7 +161,16 @@ class LevelsMenu(Menu):
     def update(self):
         if self.is_active:
             for button in self.buttons:
-                pass
+                button.update()
+            
+            sprites = self.sprites[self.animation_name]
+            total_frames = len(sprites)
+            sprite_index = (self.animation_count // self.ANIMATION_DELAY) % total_frames
+            self.image = sprites[sprite_index]
+            self.animation_count += 1
+
+            if self.animation_count >= (total_frames*2) * self.ANIMATION_DELAY:
+                self.animation_count = 0
 
 
 class PauseMenu(Menu):

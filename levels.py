@@ -49,6 +49,7 @@ class Level:
         self.menus = [self.pause_menu, self.endlevel_menu, self.game_over_menu]
         self.paused = False
         self.finished = False
+        self.game_over = False
         self.is_active = False
         self.timer = timer * FPS
         self.level_number = level_number
@@ -58,6 +59,14 @@ class Level:
         self.offset_x = 0
         self.offsext_y = 0
         self.scroll_area_width = 150
+
+    def check_state(self):
+        if self.timer <= 0 or self.player.lives == 0:
+            self.game_over = True
+            self.is_active = False
+            self.game_over_menu.is_active = True
+        elif len(self.enemies_group) == 0:
+            self.finished = True
 
     def calculate_offset(self):
         if ((self.player.rect.right - offset_x >= WIDTH - self.scroll_area_width) and self.player.x_vel > 0) or (
@@ -169,6 +178,8 @@ class Level:
 
     def update(self):
         if self.is_active and not self.paused and not self.finished:
+            self.check_state()
+            
             self.player.loop(FPS)
 
             if self.player.check_fall():

@@ -50,6 +50,16 @@ def draw(window, background, bg_image, player, objects, enemies, offset_x, offse
 
     pygame.display.update()
 
+def draw_active(window, menus, levels):
+    if any(menu.is_acitve for menu in menus):
+        for menu in menus:
+            if menu.is_active:
+                menu.draw(window)
+                break
+    else:
+        for level in levels:
+            if level.is_active:
+                level.draw_all(window)
 
 def handle_vertical_collision(player, objects, player_y_vel):
     collided_objects = []
